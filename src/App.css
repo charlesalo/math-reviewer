@@ -85,7 +85,49 @@ body {
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 12px;
+}
+
+.spacing-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+  margin-left: 8px;
+}
+
+.spacing-label {
+  font-weight: 500;
+}
+
+.spacing-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.spacing-btn:hover {
+  background: #f0f0f0;
+  border-color: #aaa;
+}
+
+.spacing-val {
+  min-width: 52px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .btn {
@@ -188,7 +230,7 @@ body {
 /* ===== Question Grid ===== */
 .question-grid {
   display: grid;
-  row-gap: 32px;
+  row-gap: max(2px, calc(32px + var(--spacing-add, 0px)));
   column-gap: 24px;
 }
 
@@ -198,7 +240,7 @@ body {
 
 .question-grid.cols-3 {
   grid-template-columns: 1fr 1fr 1fr;
-  row-gap: 10px;
+  row-gap: max(2px, calc(10px + var(--spacing-add, 0px)));
 }
 
 /* ===== Vertical Problem (Subtraction / Addition) ===== */
@@ -206,7 +248,7 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 6px 0 22px 0;
+  padding: 6px 0 max(6px, calc(22px + var(--spacing-add, 0px))) 0;
 }
 
 .problem-num {
@@ -526,16 +568,16 @@ body {
   }
 
   .question-grid {
-    row-gap: 12px;
+    row-gap: max(2px, calc(12px + var(--spacing-add, 0px)));
     column-gap: 16px;
   }
 
   .question-grid.cols-3 {
-    row-gap: 4px;
+    row-gap: max(2px, calc(4px + var(--spacing-add, 0px)));
   }
 
   .vertical-problem {
-    padding: 3px 0 10px 0;
+    padding: 3px 0 max(4px, calc(10px + var(--spacing-add, 0px))) 0;
   }
 
   .problem-line {

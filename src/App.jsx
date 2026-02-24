@@ -15,6 +15,7 @@ function colsForFormat(format) {
 function App() {
   const [config, setConfig] = useState(defaultConfig);
   const [test, setTest] = useState(null);
+  const [spacing, setSpacing] = useState(0);
 
   const handleGenerate = () => {
     setTest(generateTest(config));
@@ -233,16 +234,24 @@ function App() {
             Generate New Test
           </button>
           {test && (
-            <button className="btn btn-secondary" onClick={handlePrint}>
-              Print Test
-            </button>
+            <>
+              <button className="btn btn-secondary" onClick={handlePrint}>
+                Print Test
+              </button>
+              <div className="spacing-ctrl">
+                <span className="spacing-label">Spacing:</span>
+                <button className="spacing-btn" onClick={() => setSpacing(s => Math.max(-2, s - 1))}>−</button>
+                <span className="spacing-val">{spacing === 0 ? 'Normal' : spacing > 0 ? `+${spacing}` : spacing}</span>
+                <button className="spacing-btn" onClick={() => setSpacing(s => Math.min(5, s + 1))}>+</button>
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {test && (
         <div className="test-output">
-          <div className="test-content">
+          <div className="test-content" style={{ '--spacing-add': `${spacing * 8}px` }}>
             <div className="test-header">
               <div className="name-date-row">
                 <div className="name-field">Name: ________________________________</div>
