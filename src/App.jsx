@@ -163,9 +163,9 @@ function App() {
             {config.wordProblems.enabled && (
               <div className="config-fields">
                 <div className="field">
-                  <label>Questions:</label>
-                  <input type="number" min="0" max="30" value={config.wordProblems.count}
-                    onChange={(e) => updateConfig('wordProblems', 'count', +e.target.value)} />
+                  <label>Questions (max 24):</label>
+                  <input type="number" min="0" max="24" value={config.wordProblems.count}
+                    onChange={(e) => updateConfig('wordProblems', 'count', Math.min(24, +e.target.value))} />
                 </div>
                 <div className="field">
                   <label>Time (minutes):</label>
@@ -188,9 +188,9 @@ function App() {
             {config.geometry.enabled && (
               <div className="config-fields">
                 <div className="field">
-                  <label>Questions:</label>
-                  <input type="number" min="0" max="20" value={config.geometry.count}
-                    onChange={(e) => updateConfig('geometry', 'count', +e.target.value)} />
+                  <label>Questions (max 19):</label>
+                  <input type="number" min="0" max="19" value={config.geometry.count}
+                    onChange={(e) => updateConfig('geometry', 'count', Math.min(19, +e.target.value))} />
                 </div>
                 <div className="field">
                   <label>Time (minutes):</label>
