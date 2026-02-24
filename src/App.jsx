@@ -88,6 +88,11 @@ function App() {
                     onChange={(e) => updateConfig('addition', 'carrying', +e.target.value)} />
                 </div>
                 <div className="field">
+                  <label>3-digit (Division Meet):</label>
+                  <input type="number" min="0" max="100" value={config.addition.threeDigit ?? 0}
+                    onChange={(e) => updateConfig('addition', 'threeDigit', +e.target.value)} />
+                </div>
+                <div className="field">
                   <label>Time (minutes):</label>
                   <input type="number" min="1" max="120" value={config.addition.timeMinutes}
                     onChange={(e) => updateConfig('addition', 'timeMinutes', +e.target.value)} />
@@ -331,12 +336,112 @@ function TriangleSVG({ base, height }) {
   );
 }
 
+/** Scalene triangle with all 3 sides labeled (for perimeter problems) */
+function TrianglePerimSVG({ sideA, sideB, sideC, unit }) {
+  // Fixed scalene-looking layout: A(0,H) B(W,H) C(W*0.3, 0)
+  const W = 120, H = 85;
+  const A = [0, H], B = [W, H], C = [W * 0.3, 0];
+  const pts = `${A[0]},${A[1]} ${B[0]},${B[1]} ${C[0]},${C[1]}`;
+  const u = unit;
+  return (
+    <svg viewBox="-35 -20 210 130" className="shape-svg">
+      <polygon points={pts} fill="none" stroke="#333" strokeWidth="2" />
+      {/* Bottom side A–B */}
+      <text x={(A[0]+B[0])/2} y={H+16} textAnchor="middle" fontSize="11" fontWeight="600">{sideA} {u}</text>
+      {/* Right side B–C */}
+      <text x={(B[0]+C[0])/2+14} y={(B[1]+C[1])/2+4} textAnchor="start" fontSize="11" fontWeight="600">{sideB} {u}</text>
+      {/* Left side A–C */}
+      <text x={(A[0]+C[0])/2-12} y={(A[1]+C[1])/2+4} textAnchor="end" fontSize="11" fontWeight="600">{sideC} {u}</text>
+    </svg>
+  );
+}
+
+/** Regular polygon (pentagon, hexagon, octagon) with one side labeled */
+function RegularPolygonSVG({ numSides, side, unit }) {
+  const r = 48;
+  const cx = 55, cy = 52;
+  const offset = -Math.PI / 2;
+  const pts = Array.from({ length: numSides }, (_, i) => {
+    const a = offset + (2 * Math.PI * i) / numSides;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  });
+  const pStr = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  // Label the top-right side (between vertex 0 and vertex 1)
+  const lx = ((pts[0][0] + pts[1][0]) / 2 + 8).toFixed(1);
+  const ly = ((pts[0][1] + pts[1][1]) / 2 + 4).toFixed(1);
+  return (
+    <svg viewBox="-15 -20 155 145" className="shape-svg">
+      <polygon points={pStr} fill="none" stroke="#333" strokeWidth="2" />
+      <text x={lx} y={ly} textAnchor="start" fontSize="11" fontWeight="600">{side} {unit}</text>
+    </svg>
+  );
+}
+
+/** L-shape with outer dimensions and cut labeled on all 6 sides */
+function LShapeSVG({ outerW, outerH, cutW, cutH, unit }) {
+  const sc = Math.min(110 / outerW, 80 / outerH);
+  const W = outerW * sc, H = outerH * sc;
+  const cW = cutW * sc, cH = cutH * sc;
+  const u = unit;
+  // Cut from top-right corner
+  const pts = [
+    [0, 0], [W - cW, 0], [W - cW, cH], [W, cH], [W, H], [0, H],
+  ].map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox="-38 -25 220 145" className="shape-svg">
+      <polygon points={pts} fill="none" stroke="#333" strokeWidth="2" />
+      {/* Top short side: outerW-cutW */}
+      <text x={(W-cW)/2} y={-10} textAnchor="middle" fontSize="10" fontWeight="600">{outerW-cutW} {u}</text>
+      {/* Inner step vertical: cutH */}
+      <text x={W-cW-6} y={cH/2+4} textAnchor="end" fontSize="10" fontWeight="600">{cutH} {u}</text>
+      {/* Inner step horizontal: cutW */}
+      <text x={W-cW/2} y={cH+13} textAnchor="middle" fontSize="10" fontWeight="600">{cutW} {u}</text>
+      {/* Right long side: outerH-cutH */}
+      <text x={W+8} y={(cH+H)/2+4} textAnchor="start" fontSize="10" fontWeight="600">{outerH-cutH} {u}</text>
+      {/* Bottom: outerW */}
+      <text x={W/2} y={H+15} textAnchor="middle" fontSize="10" fontWeight="600">{outerW} {u}</text>
+      {/* Left side: outerH */}
+      <text x={-8} y={H/2+4} textAnchor="end" fontSize="10" fontWeight="600">{outerH} {u}</text>
+    </svg>
+  );
+}
+
+/** Cross/plus shape with arm width and arm length labeled */
+function CrossShapeSVG({ armW, armL, unit }) {
+  const total = 2 * armL + armW;
+  const sc = 90 / total;
+  const W = armW * sc, L = armL * sc, T = total * sc;
+  const cx = T / 2;
+  const u = unit;
+  const pts = [
+    [cx - W/2, 0], [cx + W/2, 0],
+    [cx + W/2, L], [T, L],
+    [T, L + W], [cx + W/2, L + W],
+    [cx + W/2, T], [cx - W/2, T],
+    [cx - W/2, L + W], [0, L + W],
+    [0, L], [cx - W/2, L],
+  ].map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox="-25 -22 175 155" className="shape-svg">
+      <polygon points={pts} fill="none" stroke="#333" strokeWidth="2" />
+      {/* Top arm width */}
+      <text x={cx} y={-8} textAnchor="middle" fontSize="10" fontWeight="600">{armW} {u}</text>
+      {/* Right arm length */}
+      <text x={T + 7} y={L + W/2 + 4} textAnchor="start" fontSize="10" fontWeight="600">{armL} {u}</text>
+    </svg>
+  );
+}
+
 function GeometryProblem({ num, question }) {
   const q = question;
   let shapeSvg = null;
   if (q.shape === 'rectangle') shapeSvg = <RectangleSVG length={q.length} width={q.width} />;
   else if (q.shape === 'square') shapeSvg = <SquareSVG side={q.side} />;
   else if (q.shape === 'triangle') shapeSvg = <TriangleSVG base={q.base} height={q.height} />;
+  else if (q.shape === 'triangle-perimeter') shapeSvg = <TrianglePerimSVG sideA={q.sideA} sideB={q.sideB} sideC={q.sideC} unit={q.unit} />;
+  else if (q.shape === 'regular-polygon') shapeSvg = <RegularPolygonSVG numSides={q.numSides} side={q.side} unit={q.unit} />;
+  else if (q.shape === 'l-shape') shapeSvg = <LShapeSVG outerW={q.outerW} outerH={q.outerH} cutW={q.cutW} cutH={q.cutH} unit={q.unit} />;
+  else if (q.shape === 'cross-shape') shapeSvg = <CrossShapeSVG armW={q.armW} armL={q.armL} unit={q.unit} />;
 
   return (
     <div className="problem geometry-problem">

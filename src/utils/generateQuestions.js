@@ -52,6 +52,16 @@ function genAdditionCarrying() {
   return { a, b, op: '+', answer: a + b };
 }
 
+/** 3-digit addition with carrying in at least the ones column */
+function genAddition3Digit() {
+  let a, b;
+  do {
+    a = randInt(100, 699);
+    b = randInt(100, 699);
+  } while ((a % 10) + (b % 10) < 10);
+  return { a, b, op: '+', answer: a + b };
+}
+
 /** Single-digit multiplication (factors 2-10) */
 function genMultiplication() {
   const a = randInt(2, 10);
@@ -989,6 +999,78 @@ function wpMFCompareSymbol() {
   };
 }
 
+// --- Division Meet: number patterns and large-number problems ---
+
+function wpMFPatternDouble() {
+  // Pattern with TWO missing values (e.g., 4, 8, ___, 16, ___, 24)
+  const step = pick([2, 3, 4, 5, 10]);
+  const isDesc = Math.random() < 0.4;
+  const start = isDesc ? randInt(step * 4, step * 6 + 5) : randInt(1, step + 2);
+  const seq = Array.from({ length: 6 }, (_, i) =>
+    isDesc ? start - step * i : start + step * i
+  );
+  const [p1, p2] = pick([[1, 3], [2, 4], [1, 4]]);
+  const display = seq.map((n, i) => (i === p1 || i === p2 ? '___' : String(n)));
+  return {
+    text: `Find the missing numbers: ${display.join(', ')}`,
+    answer: seq[p1],
+    answerText: `${seq[p1]}, ${seq[p2]}`,
+  };
+}
+
+function wpMFCountingRule() {
+  // "What is the pattern rule? 3, 6, 9, 12, 15, ..."
+  const step = pick([2, 3, 4, 5, 10]);
+  const start = randInt(step, step * 2);
+  const seq = Array.from({ length: 5 }, (_, i) => start + step * i);
+  return {
+    text: `What is the pattern rule? ${seq.join(', ')}, ...`,
+    answer: step,
+    answerText: `Count by ${step}s`,
+  };
+}
+
+function wpMF3DigitAdd() {
+  // 3-digit addition word problem (as seen in Division Meet reviews)
+  const name = pick(NAMES);
+  const a = randInt(100, 600);
+  const b = randInt(100, 500);
+  const sum = a + b;
+  const scenarios = [
+    { text: `${name} had ₱${a} and earned ₱${b} more doing chores. How much money does ${name} have in all?`, ans: `₱${sum}` },
+    { text: `${name} collected ${a} stickers last month and ${b} stickers this month. How many stickers does ${name} have in all?`, ans: String(sum) },
+    { text: `A school has ${a} boys and ${b} girls enrolled. How many pupils are there in all?`, ans: String(sum) },
+    { text: `${name} walked ${a} meters in the morning and ${b} meters in the afternoon. How many meters did ${name} walk in all?`, ans: `${sum} meters` },
+    { text: `${name} saved ₱${a} in January and ₱${b} in February. How much did ${name} save in all?`, ans: `₱${sum}` },
+  ];
+  const s = pick(scenarios);
+  return { text: s.text, answer: sum, answerText: s.ans };
+}
+
+function wpMFPlaceValueConv() {
+  // "10 ones = 1 ___" / "10 tens = 1 ___" / "N tens = ___ ones"
+  const type = randInt(0, 3);
+  if (type === 0) {
+    return { text: `10 ones = 1 ___`, answer: 0, answerText: 'ten' };
+  } else if (type === 1) {
+    return { text: `10 tens = 1 ___`, answer: 0, answerText: 'hundred' };
+  } else if (type === 2) {
+    const n = randInt(2, 9);
+    return {
+      text: `${n} tens = ___ ones`,
+      answer: n * 10,
+      answerText: String(n * 10),
+    };
+  } else {
+    const n = randInt(2, 9);
+    return {
+      text: `${n} hundreds = ___ tens`,
+      answer: n * 10,
+      answerText: String(n * 10),
+    };
+  }
+}
+
 // --- Text-only geometry word problems (no diagram, goes in word problem section) ---
 
 function wpGeoRectPerim() {
@@ -1113,19 +1195,19 @@ function genWordProblem() {
     // 6. Two-step Problems
     [wpTwoStepAddSub, wpTwoStepAddAdd, wpTwoStepSubSub, wpTwoStepMultAdd,
      wpLeftover, wpClassroom],
-    // 7. Money (₱)
+    // 7. Money (₱) + large-number addition
     [wpMoneyChange, wpMoneySavings, wpMoneySpend, wpMFPesoShortage,
-     wpMFPesoTotalCost, wpMFCoinShortage, wpMFChangeFromBill, wpMFUnitRate],
+     wpMFPesoTotalCost, wpMFCoinShortage, wpMFChangeFromBill, wpMFUnitRate, wpMF3DigitAdd],
     // 8. Time & Measurement
     [wpTimeTravel, wpDistanceLeft, wpMFTimePlusMins,
      wpMFTimeHoursAndMins, wpMFTimeConversion],
     // 9. Missing Numbers & Equations
     [wpMissingSum, wpMissingAddend, wpHowManyNeeded,
-     wpMFMissingAddendEq, wpProductFind, wpMFMoreThan],
-    // 10. Math Fair Logic (sequences, place value, fractions, compare)
+     wpMFMissingAddendEq, wpProductFind, wpMFMoreThan, wpMFPlaceValueConv],
+    // 10. Math Fair Logic (sequences, place value, fractions, compare, patterns)
     [wpMFPlaceValue, wpMFFraction, wpMFSequenceMissing, wpMFSequenceNext,
      wpMFCompareSymbol, wpMFHalfOfSum, wpMFTakeAwayProduct,
-     wpMFMissingPages, wpMFMultiSum],
+     wpMFMissingPages, wpMFMultiSum, wpMFPatternDouble, wpMFCountingRule],
     // 11. Situational Multi-step (class, party events)
     [wpMFTwoStepClassAbsent, wpMFPartyTwoStep, wpTwoStepAddSub],
     // 12. Geometry Word Problems (text-only)
@@ -1345,6 +1427,79 @@ function geoRectFieldDouble() {
   };
 }
 
+// ===== Division Meet: Irregular Polygon Perimeter =====
+
+/** Triangle with all 3 sides given — find the perimeter */
+function geoTrianglePerimeter() {
+  const unit = pick(['cm', 'm']);
+  let a, b, c;
+  do {
+    a = randInt(3, 14);
+    b = randInt(3, 14);
+    c = randInt(3, 14);
+  } while (a + b <= c || a + c <= b || b + c <= a || a === b || b === c);
+  return {
+    geoType: 'triangle-perimeter',
+    shape: 'triangle-perimeter',
+    sideA: a, sideB: b, sideC: c, unit,
+    question: 'Find the perimeter of the triangle.',
+    answer: a + b + c,
+    answerText: `P = ${a + b + c} ${unit}`,
+  };
+}
+
+/** Regular polygon (pentagon, hexagon, octagon) — find the perimeter */
+function geoRegularPolygon() {
+  const numSides = pick([5, 6, 8]);
+  const s = randInt(2, 10);
+  const unit = pick(['cm', 'm']);
+  const names = { 5: 'pentagon', 6: 'hexagon', 8: 'octagon' };
+  return {
+    geoType: 'regular-polygon',
+    shape: 'regular-polygon',
+    numSides, side: s, name: names[numSides], unit,
+    question: `Find the perimeter of the regular ${names[numSides]}.`,
+    answer: numSides * s,
+    answerText: `P = ${numSides * s} ${unit}`,
+  };
+}
+
+/** L-shape (rectangular notch) — find the perimeter given all 6 sides */
+function geoLShape() {
+  const outerW = randInt(8, 16);
+  const outerH = randInt(8, 16);
+  const cutW = randInt(3, outerW - 4);
+  const cutH = randInt(3, outerH - 4);
+  const unit = pick(['cm', 'm']);
+  // L-shape perimeter always equals 2*(outerW + outerH) — same as the outer rectangle
+  const perim = 2 * (outerW + outerH);
+  return {
+    geoType: 'l-shape',
+    shape: 'l-shape',
+    outerW, outerH, cutW, cutH, unit,
+    question: 'Find the perimeter of the figure.',
+    answer: perim,
+    answerText: `P = ${perim} ${unit}`,
+  };
+}
+
+/** Cross/plus shape — find the perimeter given arm width and arm length */
+function geoCrossShape() {
+  const armW = randInt(2, 4);
+  const armL = randInt(2, 5);
+  const unit = pick(['cm', 'm']);
+  // Cross has 12 segments: 4 of armW and 8 of armL
+  const perim = 4 * armW + 8 * armL;
+  return {
+    geoType: 'cross-shape',
+    shape: 'cross-shape',
+    armW, armL, unit,
+    question: 'Find the perimeter of the figure.',
+    answer: perim,
+    answerText: `P = ${perim} ${unit}`,
+  };
+}
+
 function genGeometryProblem() {
   const generators = [
     // Basic diagram problems (5)
@@ -1353,6 +1508,8 @@ function genGeometryProblem() {
     geoRectFence, geoRectFloor, geoSquareFence, geoSquareGarden,
     geoRectPainting, geoRectTable, geoTriangleSail, geoSquareTiles,
     geoRectRibbon, geoRectFieldDouble,
+    // Division Meet: irregular polygon perimeter (4)
+    geoTrianglePerimeter, geoRegularPolygon, geoLShape, geoCrossShape,
   ];
   return generators[randInt(0, generators.length - 1)]();
 }
@@ -1391,6 +1548,7 @@ export function generateTest(config) {
       questions: [
         ...generateMany(genAdditionSimple, config.addition.simple),
         ...generateMany(genAdditionCarrying, config.addition.carrying),
+        ...generateMany(genAddition3Digit, config.addition.threeDigit ?? 0),
       ],
     };
     test.addition.totalQuestions = test.addition.questions.length;
@@ -1441,7 +1599,7 @@ export function generateTest(config) {
 
 export const defaultConfig = {
   subtraction: { enabled: true, twoDigit: 24, threeDigit: 16, timeMinutes: 30 },
-  addition: { enabled: true, simple: 10, carrying: 10, timeMinutes: 10 },
+  addition: { enabled: true, simple: 10, carrying: 10, threeDigit: 0, timeMinutes: 10 },
   multiplication: { enabled: true, count: 20, timeMinutes: 10 },
   division: { enabled: true, count: 20, timeMinutes: 10 },
   wordProblems: { enabled: true, count: 8, timeMinutes: 15 },
