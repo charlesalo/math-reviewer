@@ -7,6 +7,7 @@ function colsForFormat(format) {
     case 'horizontal': return 2;
     case 'word':       return 1;
     case 'geometry':   return 2;
+    case 'pattern':    return 2;
     default:           return 2;
   }
 }
@@ -200,6 +201,31 @@ function App() {
               </div>
             )}
           </div>
+
+          <div className="config-card">
+            <label className="config-header">
+              <input
+                type="checkbox"
+                checked={config.patterns.enabled}
+                onChange={(e) => updateConfig('patterns', 'enabled', e.target.checked)}
+              />
+              <span>Section 7: Number &amp; Shape Patterns</span>
+            </label>
+            {config.patterns.enabled && (
+              <div className="config-fields">
+                <div className="field">
+                  <label>Questions (max 12):</label>
+                  <input type="number" min="0" max="12" value={config.patterns.count}
+                    onChange={(e) => updateConfig('patterns', 'count', Math.min(12, +e.target.value))} />
+                </div>
+                <div className="field">
+                  <label>Time (minutes):</label>
+                  <input type="number" min="1" max="120" value={config.patterns.timeMinutes}
+                    onChange={(e) => updateConfig('patterns', 'timeMinutes', +e.target.value)} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="actions">
@@ -239,6 +265,7 @@ function App() {
                     if (section.format === 'horizontal') return <HorizontalProblem key={idx} num={num} question={q} />;
                     if (section.format === 'word') return <WordProblem key={idx} num={num} question={q} />;
                     if (section.format === 'geometry') return <GeometryProblem key={idx} num={num} question={q} />;
+                    if (section.format === 'pattern') return <PatternProblem key={idx} num={num} question={q} />;
                     return null;
                   })}
                 </div>
@@ -297,6 +324,31 @@ function WordProblem({ num, question }) {
       <div className="word-problem-body">
         <p className="word-problem-text">{question.text}</p>
         <div className="word-problem-answer">Answer: _________</div>
+      </div>
+    </div>
+  );
+}
+
+function PatternProblem({ num, question }) {
+  return (
+    <div className="problem pattern-problem">
+      <div className="problem-num">{num}.</div>
+      <div className="pattern-body">
+        <p className="pattern-instruction">{question.instruction}</p>
+        <div className="pattern-sequence">
+          {question.sequence.map((item, i) => {
+            const isLast = i === question.sequence.length - 1;
+            return (
+              <span key={i} className="pattern-cell">
+                {item === '___'
+                  ? <span className="pattern-blank"></span>
+                  : <span className="pattern-item">{item}</span>
+                }
+                {!isLast && <span className="pattern-sep">,</span>}
+              </span>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -468,8 +520,8 @@ function AnswerKey({ test }) {
             {section.questions.map((q, idx) => (
               <div key={idx} className="answer-item">
                 {idx + 1}.{' '}
-                {section.format === 'word'
-                  ? (q.answerText ?? String(q.answer))
+                {(section.format === 'word' || section.format === 'pattern')
+                  ? (q.answerText ?? String(q.answer ?? ''))
                   : section.format === 'geometry'
                   ? q.answerText
                   : `${q.a}${section.format === 'vertical' ? (q.op === '+' ? '+' : '-') : q.op}${q.b}=${q.answer}`}

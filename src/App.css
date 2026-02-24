@@ -349,6 +349,60 @@ body {
   color: #555;
 }
 
+/* ===== Pattern Problem ===== */
+.pattern-problem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.pattern-body {
+  flex: 1;
+}
+
+.pattern-instruction {
+  font-size: 13px;
+  color: #444;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.pattern-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0;
+  margin-bottom: 4px;
+}
+
+.pattern-cell {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.pattern-item {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a1a;
+}
+
+.pattern-sep {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 8px;
+  color: #333;
+}
+
+.pattern-blank {
+  display: inline-block;
+  width: 34px;
+  border-bottom: 2px solid #333;
+  vertical-align: baseline;
+  margin-bottom: -1px;
+}
+
 /* ===== Answer Key ===== */
 .answer-key-page {
   min-height: auto;
@@ -427,7 +481,8 @@ body {
   .vertical-problem,
   .horizontal-problem,
   .word-problem,
-  .geometry-problem {
+  .geometry-problem,
+  .pattern-problem {
     page-break-inside: avoid;
   }
 
@@ -515,6 +570,22 @@ body {
 
   .geometry-answer {
     font-size: 9pt;
+  }
+
+  .pattern-instruction {
+    font-size: 10pt;
+  }
+
+  .pattern-item {
+    font-size: 12pt;
+  }
+
+  .pattern-sep {
+    font-size: 11pt;
+  }
+
+  .pattern-blank {
+    width: 30px;
   }
 
   .answer-key-title {

@@ -1514,6 +1514,140 @@ function genGeometryProblem() {
   return generators[randInt(0, generators.length - 1)]();
 }
 
+// ===== Patterns =====
+
+const PATTERN_COLORS = ['red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink'];
+const PATTERN_SHAPES = ['△', '○', '□', '◇', '★'];
+
+/** Pick 2 non-adjacent blank positions from the interior of a sequence (not first, not last) */
+function pickTwoBlanks(len) {
+  const candidates = Array.from({ length: len - 2 }, (_, i) => i + 1);
+  const p1 = pick(candidates);
+  const remaining = candidates.filter(i => Math.abs(i - p1) > 1);
+  const pool = remaining.length ? remaining : candidates.filter(i => i !== p1);
+  const p2 = pick(pool);
+  return [p1, p2].sort((a, b) => a - b);
+}
+
+/** Ascending skip-count sequence with 2 blanks */
+function patSkipCountAsc() {
+  const step = pick([2, 3, 4, 5, 10]);
+  const start = randInt(1, step * 2);
+  const len = 7;
+  const seq = Array.from({ length: len }, (_, i) => start + step * i);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What are the missing numbers? Write them on the blanks.',
+    sequence: seq.map((n, i) => blanks.includes(i) ? '___' : String(n)),
+    answerText: blanks.map(i => String(seq[i])).join(', '),
+  };
+}
+
+/** Descending skip-count sequence with 2 blanks */
+function patSkipCountDesc() {
+  const step = pick([2, 3, 4, 5, 10]);
+  const start = step * randInt(6, 10);
+  const len = 7;
+  const seq = Array.from({ length: len }, (_, i) => start - step * i);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What are the missing numbers? Write them on the blanks.',
+    sequence: seq.map((n, i) => blanks.includes(i) ? '___' : String(n)),
+    answerText: blanks.map(i => String(seq[i])).join(', '),
+  };
+}
+
+/** 2-element repeating cycle of numbers with 2 blanks */
+function patTwoElementCycle() {
+  let a = randInt(1, 20), b;
+  do { b = randInt(1, 20); } while (b === a);
+  const cycle = [a, b];
+  const len = 8;
+  const seq = Array.from({ length: len }, (_, i) => cycle[i % 2]);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What are the missing numbers? Write them on the blanks.',
+    sequence: seq.map((n, i) => blanks.includes(i) ? '___' : String(n)),
+    answerText: blanks.map(i => String(seq[i])).join(', '),
+  };
+}
+
+/** 3-element repeating cycle of numbers with 2 blanks */
+function patThreeElementCycle() {
+  let a = randInt(1, 15), b, c;
+  do { b = randInt(1, 20); } while (b === a);
+  do { c = randInt(1, 25); } while (c === a || c === b);
+  const cycle = [a, b, c];
+  const len = 9;
+  const seq = Array.from({ length: len }, (_, i) => cycle[i % 3]);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What are the missing numbers? Write them on the blanks.',
+    sequence: seq.map((n, i) => blanks.includes(i) ? '___' : String(n)),
+    answerText: blanks.map(i => String(seq[i])).join(', '),
+  };
+}
+
+/** Repeating color-word cycle with 2 blanks */
+function patColorCycle() {
+  const cycleLen = pick([2, 3]);
+  const shuffled = [...PATTERN_COLORS].sort(() => Math.random() - 0.5);
+  const cycle = shuffled.slice(0, cycleLen);
+  const len = cycleLen === 2 ? 8 : 9;
+  const seq = Array.from({ length: len }, (_, i) => cycle[i % cycleLen]);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What color is missing? Write the missing colors on the blanks.',
+    sequence: seq.map((c, i) => blanks.includes(i) ? '___' : c),
+    answerText: blanks.map(i => seq[i]).join(', '),
+  };
+}
+
+/** Repeating shape-symbol cycle with 2 blanks */
+function patShapeCycle() {
+  const cycleLen = pick([2, 3]);
+  const shuffled = [...PATTERN_SHAPES].sort(() => Math.random() - 0.5);
+  const cycle = shuffled.slice(0, cycleLen);
+  const len = cycleLen === 2 ? 8 : 9;
+  const seq = Array.from({ length: len }, (_, i) => cycle[i % cycleLen]);
+  const blanks = pickTwoBlanks(len);
+  return {
+    instruction: 'What shape is missing? Write the missing shapes on the blanks.',
+    sequence: seq.map((s, i) => blanks.includes(i) ? '___' : s),
+    answerText: blanks.map(i => seq[i]).join(', '),
+  };
+}
+
+/** Arithmetic sequence — what comes next? (single blank at end) */
+function patNextInSequence() {
+  const step = pick([2, 3, 4, 5, 10]);
+  const isDesc = Math.random() < 0.4;
+  const start = isDesc ? step * randInt(5, 9) : randInt(1, step * 2);
+  const len = 5;
+  const seq = Array.from({ length: len }, (_, i) =>
+    isDesc ? start - step * i : start + step * i
+  );
+  const next = isDesc ? seq[len - 1] - step : seq[len - 1] + step;
+  return {
+    instruction: 'What comes next? Fill in the blank.',
+    sequence: [...seq.map(String), '___'],
+    answerText: String(next),
+  };
+}
+
+function genPattern() {
+  const generators = [
+    patSkipCountAsc, patSkipCountAsc,
+    patSkipCountDesc,
+    patTwoElementCycle,
+    patThreeElementCycle,
+    patColorCycle,
+    patShapeCycle,
+    patNextInSequence, patNextInSequence,
+  ];
+  return pick(generators)();
+}
+
 // ===== Test assembly =====
 
 function generateMany(genFn, count) {
@@ -1594,6 +1728,16 @@ export function generateTest(config) {
     test.geometry.totalQuestions = test.geometry.questions.length;
   }
 
+  if (config.patterns?.enabled) {
+    test.patterns = {
+      label: 'Number & Shape Patterns',
+      time: config.patterns.timeMinutes,
+      format: 'pattern',
+      questions: generateMany(genPattern, config.patterns.count),
+    };
+    test.patterns.totalQuestions = test.patterns.questions.length;
+  }
+
   return test;
 }
 
@@ -1604,4 +1748,5 @@ export const defaultConfig = {
   division: { enabled: true, count: 20, timeMinutes: 10 },
   wordProblems: { enabled: true, count: 8, timeMinutes: 15 },
   geometry: { enabled: true, count: 6, timeMinutes: 10 },
+  patterns: { enabled: true, count: 8, timeMinutes: 10 },
 };
